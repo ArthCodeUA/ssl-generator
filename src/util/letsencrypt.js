@@ -3,7 +3,7 @@ import fs from "fs";
 import yesno from 'yesno';
 import {b64, hex2b64, sha256} from "./crypto.js";
 import {openssl} from "openssl-nodejs";
-import config from "../config.js";
+import config from "../../config.js";
 
 export class LetsEncrypt {
     directoryUrl = 'https://acme-v02.api.letsencrypt.org/directory';

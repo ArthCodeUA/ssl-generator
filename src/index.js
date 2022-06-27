@@ -2,7 +2,7 @@ import {openssl} from 'openssl-nodejs';
 import {LetsEncrypt} from "./util/letsencrypt.js";
 import {createPublicKey} from 'crypto';
 import {b64, clearB64, sha256} from "./util/crypto.js";
-import config from "./config.js";
+import config from "../config.js";
 import * as fs from 'fs';
 
 export async function getCertificate(email, domains) {
