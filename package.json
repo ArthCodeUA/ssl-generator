@@ -1,4 +1,23 @@
 {
   "name": "ssl-gen",
-  "version": "1.0.0"
+  "version": "1.0.0",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "lint": "npx eslint .",
+    "prettier:check": "npx prettier --check .",
+    "prettier:write": "npx prettier --write ."
+  },
+  "dependencies": {
+    "axios": "0.27.2",
+    "openssl": "2.0.0",
+    "openssl-nodejs": "https://github.com/ArthCodeUA/openssl-nodejs/tarball/master",
+    "yesno": "0.4.0"
+  },
+  "devDependencies": {
+    "eslint": "8.18.0",
+    "husky": "8.0.1",
+    "prettier": "2.7.1"
+  }
 }
