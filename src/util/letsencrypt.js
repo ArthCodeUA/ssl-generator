@@ -300,6 +300,7 @@ export class LetsEncrypt {
                     await this.checkChallenge(n);
                 }, +process.env.RECHECK_INTERVAL);
             } else if (response.data.status === 'valid') {
+                console.log('Verified!');
                 return true;
             } else {
                 throw new Error('Failed, start one more time');
