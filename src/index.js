@@ -107,7 +107,7 @@ async function getKeyThumbprint(jwk) {
 }
 
 function populateOrder(csr, domains) {
-    const csrMask = /-----BEGIN CERTIFICATE REQUEST-----([A-Za-z0-9+\/=\s]+)-----END CERTIFICATE REQUEST-----/;
+    const csrMask = /-----BEGIN CERTIFICATE REQUEST-----([A-Za-z\d+\/=\s]+)-----END CERTIFICATE REQUEST-----/;
     const csr_der = clearB64(csrMask.exec(csr)[1]);
     const finalize_payload = {"csr": (domains.length > 1 ? csr_der.replace('\n', '') : csr_der)};
     const order_payload = {"identifiers": []};
