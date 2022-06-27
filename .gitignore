@@ -1,5 +1,3 @@
 .idea/*
 *.iml
 package-lock.json
-openssl/*
-node_modules/*
