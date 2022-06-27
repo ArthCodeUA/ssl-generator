@@ -410,20 +410,16 @@ export class LetsEncrypt {
     });
   }
 
-  askForChallengeCompletion(challenge) {
-    return new Promise((resolve) => {
-      let challengeDone = false;
-      while (!challengeDone) {
-        challenge.forEach((string) => console.log(string));
-        yesno({
-          question: "Are you done doing challenge? Y/n",
-          defaultValue: true,
-        }).then((value) => {
-          challengeDone = value;
-        });
-      }
-      resolve(true);
-    });
+  async askForChallengeCompletion(challenge) {
+    let challengeDone = false;
+    while (!challengeDone) {
+      challenge.forEach((string) => console.log(string));
+      challengeDone = await yesno({
+        question: "Are you done doing challenge? Y/n",
+        defaultValue: true,
+      });
+    }
+    return challengeDone;
   }
 
   async prepareFinalizeOrder() {
