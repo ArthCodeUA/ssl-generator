@@ -1,4 +1,19 @@
 {
   "name": "ssl-gen",
-  "version": "1.0.0"
+  "version": "1.0.0",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "axios": "0.27.2",
+    "openssl": "2.0.0",
+    "openssl-nodejs": "https://github.com/ArthCodeUA/openssl-nodejs/tarball/master",
+    "yesno": "0.4.0"
+  },
+  "devDependencies": {
+    "eslint": "8.18.0",
+    "prettier": "2.7.1"
+  }
 }
