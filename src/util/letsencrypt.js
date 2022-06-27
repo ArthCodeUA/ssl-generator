@@ -1,8 +1,9 @@
 import axios from "axios";
-import {b64, hex2b64, sha256} from "./crypto.js";
 import fs from "fs";
-import {openssl} from "openssl-nodejs";
 import yesno from 'yesno';
+import {b64, hex2b64, sha256} from "./crypto.js";
+import {openssl} from "openssl-nodejs";
+import config from "../config.js";
 
 export class LetsEncrypt {
     directoryUrl = 'https://acme-v02.api.letsencrypt.org/directory';
@@ -38,12 +39,12 @@ export class LetsEncrypt {
 
     async registerAccount() {
         fs.writeFileSync(
-            process.env.SIGNATURE_REQUEST_PATH,
+            config.SIGNATURE_REQUEST_PATH,
             `${this.account.registration_protected_b64}.${this.account.registration_payload_b64}`
         );
         this.account.registration_sig = hex2b64((await openssl(
-            `openssl dgst -sha256 -hex -sign account.key ${process.env.SIGNATURE_REQUEST_PATH}`,
-            process.env.OPENSSL_DIR
+            `openssl dgst -sha256 -hex -sign account.key ${config.SIGNATURE_REQUEST_PATH}`,
+            config.OPENSSL_DIR
         )).split('= ')[1]);
         await axios.post(this.directory.newAccount, {
             protected: this.account.registration_protected_b64,
@@ -67,12 +68,12 @@ export class LetsEncrypt {
 
     async updateAccount() {
         fs.writeFileSync(
-            process.env.SIGNATURE_REQUEST_PATH,
+            config.SIGNATURE_REQUEST_PATH,
             `${this.account.update_protected_b64}.${this.account.update_payload_b64}`
         );
         this.account.update_sig = hex2b64((await openssl(
-            `openssl dgst -sha256 -hex -sign account.key ${process.env.SIGNATURE_REQUEST_PATH}`,
-            process.env.OPENSSL_DIR
+            `openssl dgst -sha256 -hex -sign account.key ${config.SIGNATURE_REQUEST_PATH}`,
+            config.OPENSSL_DIR
         )).split('= ')[1]);
         await axios.post(this.account.account_uri, {
             protected: this.account.update_protected_b64,
@@ -95,12 +96,12 @@ export class LetsEncrypt {
 
     async createNewOrder() {
         fs.writeFileSync(
-            process.env.SIGNATURE_REQUEST_PATH,
+            config.SIGNATURE_REQUEST_PATH,
             `${this.order.order_protected_b64}.${this.order.order_payload_b64}`
         );
         this.order.order_sig = hex2b64((await openssl(
-            `openssl dgst -sha256 -hex -sign account.key ${process.env.SIGNATURE_REQUEST_PATH}`,
-            process.env.OPENSSL_DIR
+            `openssl dgst -sha256 -hex -sign account.key ${config.SIGNATURE_REQUEST_PATH}`,
+            config.OPENSSL_DIR
         )).split('= ')[1]);
         await axios.post(this.directory.newOrder, {
             protected: this.order.order_protected_b64,
@@ -167,12 +168,12 @@ export class LetsEncrypt {
             this.authorizations[auth_url]['auth_protected_json'] = protected_json
             this.authorizations[auth_url]['auth_protected_b64'] = protected_b64;
             fs.writeFileSync(
-                process.env.SIGNATURE_REQUEST_PATH,
+                config.SIGNATURE_REQUEST_PATH,
                 `${this.authorizations[auth_url].auth_protected_b64}.${this.authorizations[auth_url].auth_payload_b64}`
             );
             this.authorizations[auth_url].auth_sig = hex2b64((await openssl(
-                `openssl dgst -sha256 -hex -sign account.key ${process.env.SIGNATURE_REQUEST_PATH}`,
-                process.env.OPENSSL_DIR
+                `openssl dgst -sha256 -hex -sign account.key ${config.SIGNATURE_REQUEST_PATH}`,
+                config.OPENSSL_DIR
             )).split('= ')[1]);
         });
     }
@@ -256,12 +257,12 @@ export class LetsEncrypt {
             this.authorizations[auth_url][method + '_protected_json'] = protected_json
             this.authorizations[auth_url][method + '_protected_b64'] = protected_b64;
             fs.writeFileSync(
-                process.env.SIGNATURE_REQUEST_PATH,
+                config.SIGNATURE_REQUEST_PATH,
                 `${protected_b64}.${b64('{}')}`
             );
             this.authorizations[auth_url][method + '_challenge_sig'] = hex2b64((await openssl(
-                `openssl dgst -sha256 -hex -sign account.key ${process.env.SIGNATURE_REQUEST_PATH}`,
-                process.env.OPENSSL_DIR
+                `openssl dgst -sha256 -hex -sign account.key ${config.SIGNATURE_REQUEST_PATH}`,
+                config.OPENSSL_DIR
             )).split('= ')[1]);
         });
     }
@@ -293,12 +294,12 @@ export class LetsEncrypt {
             this.authorizations[auth_url].recheck_auth_response = response.data;
             if (response.data.status === 'pending') {
                 console.log(
-                    `Checked, but status still pending, recheck in ${+process.env.RECHECK_INTERVAL / 1000} seconds`
+                    `Checked, but status still pending, recheck in ${+config.RECHECK_INTERVAL / 1000} seconds`
                 );
                 setTimeout(async () => {
                     await this.reCheckSignature(n);
                     await this.checkChallenge(n);
-                }, +process.env.RECHECK_INTERVAL);
+                }, +config.RECHECK_INTERVAL);
             } else if (response.data.status === 'valid') {
                 console.log('Verified!');
                 return true;
@@ -321,12 +322,12 @@ export class LetsEncrypt {
             this.authorizations[auth_url].recheck_auth_protected_json = protected_json
             this.authorizations[auth_url].recheck_auth_protected_b64 = protected_b64;
             fs.writeFileSync(
-                process.env.SIGNATURE_REQUEST_PATH,
+                config.SIGNATURE_REQUEST_PATH,
                 `${protected_b64}.${this.authorizations[auth_url].recheck_auth_payload_b64}`
             );
             this.authorizations[auth_url].recheck_auth_sig = hex2b64((await openssl(
-                `openssl dgst -sha256 -hex -sign account.key ${process.env.SIGNATURE_REQUEST_PATH}`,
-                process.env.OPENSSL_DIR
+                `openssl dgst -sha256 -hex -sign account.key ${config.SIGNATURE_REQUEST_PATH}`,
+                config.OPENSSL_DIR
             )).split('= ')[1]);
         });
     }
@@ -355,12 +356,12 @@ export class LetsEncrypt {
             }
             this.order.finalize_protected_b64 = b64(JSON.stringify(this.order.finalize_protected_json));
             fs.writeFileSync(
-                process.env.SIGNATURE_REQUEST_PATH,
+                config.SIGNATURE_REQUEST_PATH,
                 `${this.order.finalize_protected_b64}.${this.order.finalize_payload_b64}`
             );
             this.order.finalize_sig = hex2b64((await openssl(
-                `openssl dgst -sha256 -hex -sign account.key ${process.env.SIGNATURE_REQUEST_PATH}`,
-                process.env.OPENSSL_DIR
+                `openssl dgst -sha256 -hex -sign account.key ${config.SIGNATURE_REQUEST_PATH}`,
+                config.OPENSSL_DIR
             )).split('= ')[1]);
         });
     }
@@ -389,12 +390,12 @@ export class LetsEncrypt {
             this.order.recheck_order_response = response.data;
             if (response.data.status === 'pending' || response.data.status === 'processing' || response.data.status === 'ready') {
                 console.log(
-                    `Checked, but status still pending, recheck in ${+process.env.RECHECK_INTERVAL / 1000} seconds`
+                    `Checked, but status still pending, recheck in ${+config.RECHECK_INTERVAL / 1000} seconds`
                 );
                 setTimeout(async () => {
                     await this.reCheckOrderSignature();
                     await this.checkOrder();
-                }, +process.env.RECHECK_INTERVAL);
+                }, +config.RECHECK_INTERVAL);
             } else if (response.data.status === 'valid') {
                 this.order.cert_uri = response.data.certificate;
                 await this.getNonce().then(async (nonce) => {
@@ -406,12 +407,12 @@ export class LetsEncrypt {
                     }
                     this.order.cert_protected_b64 = b64(JSON.stringify(this.order.cert_protected_json));
                     fs.writeFileSync(
-                        process.env.SIGNATURE_REQUEST_PATH,
+                        config.SIGNATURE_REQUEST_PATH,
                         `${this.order.cert_protected_b64}.${this.order.cert_payload_b64}`
                     );
                     this.order.cert_sig = hex2b64((await openssl(
-                        `openssl dgst -sha256 -hex -sign account.key ${process.env.SIGNATURE_REQUEST_PATH}`,
-                        process.env.OPENSSL_DIR
+                        `openssl dgst -sha256 -hex -sign account.key ${config.SIGNATURE_REQUEST_PATH}`,
+                        config.OPENSSL_DIR
                     )).split('= ')[1]);
                 });
             } else {
@@ -430,12 +431,12 @@ export class LetsEncrypt {
             }
             this.order.recheck_order_protected_b64 = b64(JSON.stringify(this.order.recheck_order_protected_json));
             fs.writeFileSync(
-                process.env.SIGNATURE_REQUEST_PATH,
+                config.SIGNATURE_REQUEST_PATH,
                 `${this.order.recheck_order_protected_b64}.${this.order.recheck_order_payload_b64}`
             );
             this.order.recheck_order_sig = hex2b64((await openssl(
-                `openssl dgst -sha256 -hex -sign account.key ${process.env.SIGNATURE_REQUEST_PATH}`,
-                process.env.OPENSSL_DIR
+                `openssl dgst -sha256 -hex -sign account.key ${config.SIGNATURE_REQUEST_PATH}`,
+                config.OPENSSL_DIR
             )).split('= ')[1]);
         });
     }

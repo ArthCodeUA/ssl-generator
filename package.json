@@ -8,7 +8,6 @@
   },
   "dependencies": {
     "axios": "0.27.2",
-    "dotenv": "16.0.1",
     "openssl": "2.0.0",
     "openssl-nodejs": "https://github.com/ArthCodeUA/openssl-nodejs/tarball/master",
     "yesno": "0.4.0"

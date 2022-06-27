@@ -2,10 +2,8 @@ import {openssl} from 'openssl-nodejs';
 import {LetsEncrypt} from "./util/letsencrypt.js";
 import {createPublicKey} from 'crypto';
 import {b64, clearB64, sha256} from "./util/crypto.js";
+import config from "./config.js";
 import * as fs from 'fs';
-import dotenv from 'dotenv';
-
-dotenv.config();
 
 export async function getCertificate(email, domains) {
     domains = domains ? domains.split(',') : [];
@@ -33,11 +31,11 @@ export async function getCertificate(email, domains) {
             await letsEncrypt.checkOrder();
             await letsEncrypt.getCertificate();
             fs.writeFileSync(
-                `${process.env.OPENSSL_DIR}${domains[0].split('.').slice(-2).join('.')}.cert`, letsEncrypt.certificate
+                `${config.OPENSSL_DIR}${domains[0].split('.').slice(-2).join('.')}.cert`, letsEncrypt.certificate
             );
             console.log(
                 `Certificate was successfully generated in path ` +
-                `${process.env.OPENSSL_DIR}${domains[0].split('.').slice(-2).join('.')}.cert`
+                `${config.OPENSSL_DIR}${domains[0].split('.').slice(-2).join('.')}.cert`
             );
         } else {
             console.log('The top-level domain of all domains should be the same!');
@@ -48,13 +46,13 @@ export async function getCertificate(email, domains) {
 }
 
 async function initAccountKey() {
-    if (!fs.existsSync(process.env.PRIVATE_ACCOUNT_KEY_PATH)) {
-        fs.mkdirSync(process.env.OPENSSL_DIR);
-        const privateKey = await openssl('openssl genrsa 4096', process.env.OPENSSL_DIR);
-        fs.writeFileSync(process.env.PRIVATE_ACCOUNT_KEY_PATH, String(privateKey));
+    if (!fs.existsSync(config.PRIVATE_ACCOUNT_KEY_PATH)) {
+        fs.mkdirSync(config.OPENSSL_DIR);
+        const privateKey = await openssl('openssl genrsa 4096', config.OPENSSL_DIR);
+        fs.writeFileSync(config.PRIVATE_ACCOUNT_KEY_PATH, String(privateKey));
     }
 
-    return String(await openssl('openssl rsa -in account.key -pubout', process.env.OPENSSL_DIR));
+    return String(await openssl('openssl rsa -in account.key -pubout', config.OPENSSL_DIR));
 }
 
 async function populateAccount(email) {
@@ -86,14 +84,14 @@ async function populateAccount(email) {
 }
 
 async function generateCsr(domains) {
-    const privateKey = await openssl('openssl genrsa 4096', process.env.OPENSSL_DIR);
-    let config = fs.readFileSync('/etc/ssl/openssl.cnf').toString();
-    config += `\n[ SAN ]\nsubjectAltName=${domains.map(domain => `DNS:${domain}`).join(',')}`;
-    fs.writeFileSync(process.env.OPENSSL_CNF_PATH, config);
-    fs.writeFileSync(process.env.PRIVATE_DOMAIN_KEY_PATH, String(privateKey));
+    const privateKey = await openssl('openssl genrsa 4096', config.OPENSSL_DIR);
+    let cnf = fs.readFileSync('/etc/ssl/openssl.cnf').toString();
+    cnf += `\n[ SAN ]\nsubjectAltName=${domains.map(domain => `DNS:${domain}`).join(',')}`;
+    fs.writeFileSync(config.OPENSSL_CNF_PATH, cnf);
+    fs.writeFileSync(config.PRIVATE_DOMAIN_KEY_PATH, String(privateKey));
     return await openssl(
-        `openssl req -new -sha256 -key domain.key -subj / -reqexts SAN -config ${process.env.OPENSSL_CNF_PATH}`,
-        process.env.OPENSSL_DIR
+        `openssl req -new -sha256 -key domain.key -subj / -reqexts SAN -config ${config.OPENSSL_CNF_PATH}`,
+        config.OPENSSL_DIR
     );
 }
 
