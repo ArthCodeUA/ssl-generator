@@ -4,7 +4,10 @@
   "type": "module",
   "main": "src/index.js",
   "scripts": {
-    "start": "node src/index.js"
+    "start": "node src/index.js",
+    "lint": "npx eslint .",
+    "prettier:check": "npx prettier --check .",
+    "prettier:write": "npx prettier --write ."
   },
   "dependencies": {
     "axios": "0.27.2",
@@ -14,6 +17,7 @@
   },
   "devDependencies": {
     "eslint": "8.18.0",
+    "husky": "8.0.1",
     "prettier": "2.7.1"
   }
 }
