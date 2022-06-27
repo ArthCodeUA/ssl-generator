@@ -8,16 +8,33 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 export async function getCertificate(email, domains) {
-    const letsEncrypt = new LetsEncrypt();
-    await letsEncrypt.populateDirectory();
-    const csr = await generateCsr(domains);
-    letsEncrypt.account = await populateAccount(email);
-    letsEncrypt.order = populateOrder(csr, domains);
-    await letsEncrypt.populateRegistrationSignature();
-    await letsEncrypt.registerAccount();
-    await letsEncrypt.updateAccount();
-    await letsEncrypt.createNewOrder();
-    // console.dir(letsEncrypt, {depth: null});
+    domains = domains ? domains.split(',') : [];
+    if (email && domains && domains.length > 0) {
+        const letsEncrypt = new LetsEncrypt();
+        await letsEncrypt.populateDirectory();
+        letsEncrypt.account = await populateAccount(email);
+        const csr = await generateCsr(domains);
+        letsEncrypt.order = populateOrder(csr, domains);
+        await letsEncrypt.populateRegistrationSignature();
+        await letsEncrypt.registerAccount();
+        await letsEncrypt.updateAccount();
+        await letsEncrypt.createNewOrder();
+        for (let i = 0; i < domains.length; i++) {
+            await letsEncrypt.prepareChallenge(i);
+            await letsEncrypt.requestChallenge(i);
+            const method = await letsEncrypt.performChallenge(i);
+            await letsEncrypt.confirmChallenge(i, method);
+            await letsEncrypt.validateChallenge(i, method);
+            await letsEncrypt.checkChallenge(i);
+        }
+        await letsEncrypt.prepareFinalizeOrder();
+        await letsEncrypt.finalizeOrder();
+        await letsEncrypt.checkOrder();
+        const certificate = await letsEncrypt.getCertificate();
+        console.log(certificate);
+    } else {
+        console.log('Email and/or domains parameters are wrong or does not exist!');
+    }
 }
 
 async function initAccountKey() {
@@ -126,4 +143,4 @@ function populateOrder(csr, domains) {
     };
 }
 
-await getCertificate('arthionweb@gmail.com', ['arthcode.nl']);
+await getCertificate(process.argv[2], process.argv[3]);
