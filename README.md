@@ -1,6 +1,6 @@
 # SSL Generator
 
-Use a simple web UI to issue an SSL certificate and get it signed by LetsEncrypt Authority </br>
+Use a simple CLI application to issue an SSL certificate and get it signed by LetsEncrypt Authority </br>
 Domains should be divided by comma without spaces and the top-level domain
 of every domain stated in command line should be same </br>
 The task description by the teacher: [SSL Generator](https://github.com/nosovk/students-micro-tasks/blob/main/tasks/task-ssl-generator.md)
